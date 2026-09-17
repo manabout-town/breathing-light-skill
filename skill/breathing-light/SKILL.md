@@ -32,7 +32,7 @@ align-pilates.vercel.app(2026-09-17)에서 만들고 유저가 "좋다"고 확�
 | `assets/window-light.js` | `WindowLight.mount(canvas,{preset,...})` — WebGL 창가 빛 배경 |
 | `assets/demo.html` | 둘을 붙인 최소 예제 (`?preset=dusk` 등으로 비교) |
 | `scripts/verify.mjs` | 인트로 시점별 컷 + 폰 폭 히어로 검사 (playwright) |
-| `references/pitfalls.md` | 실제로 밟은 함정 6개 — **붙이기 전에 읽기** |
+| `references/pitfalls.md` | 실제로 밟은 함정 7개 — **붙이기 전에 읽기** |
 | `references/tuning.md` | 업종별 프리셋·변수 조합, 세기 조절 기준 |
 
 ## 작업 순서
