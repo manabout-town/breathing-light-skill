@@ -1,0 +1,68 @@
+/*
+ * breathing-light.css — 인트로 「한 번의 호흡 → 원이 창처럼 열림」 + 히어로 배경 캔버스 자리
+ * 색은 아래 변수만 바꾸면 된다. 사이트 :root 뒤에 넣을 것.
+ */
+:root{
+  --bl-room-1:#2a251e;          /* 인트로 방 가운데 */
+  --bl-room-2:#17150f;          /* 인트로 방 가장자리 */
+  --bl-text:rgba(243,241,236,.82);
+  --bl-dim:rgba(243,241,236,.38);
+  --bl-track:rgba(243,241,236,.16);
+  --bl-arc:#d9785a;             /* 진행 호 · 가운데 점 (브랜드 포인트 컬러) */
+  --bl-glow:255,226,186;        /* 방 안 빛 RGB */
+  --bl-dur:3s;                  /* 호흡 길이 — JS의 duration과 맞출 것 */
+  --bl-orb:min(46vw,220px);
+  --bl-hero-fallback:linear-gradient(115deg,#ebe8e1 0%,#f3f1ec 45%,#f7f3ea 100%);
+}
+
+/* ── 인트로 ── */
+@property --bl-hole{syntax:'<length>';inherits:false;initial-value:0px}
+#bl-intro{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 50%,var(--bl-room-1) 0%,var(--bl-room-2) 70%);
+  --bl-hole:0px;
+  /* 부드러운 가장자리는 구멍 "안쪽"으로 둔다: 대기 중(hole=0)엔 완전히 불투명해야 함 */
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,transparent calc(var(--bl-hole) - 120px),#000 var(--bl-hole));
+          mask-image:radial-gradient(circle at 50% 50%,transparent calc(var(--bl-hole) - 120px),#000 var(--bl-hole));
+  transition:--bl-hole 1.3s cubic-bezier(.7,0,.2,1),opacity .5s ease-out .9s,visibility 0s 1.4s}
+html.bl-open #bl-intro{--bl-hole:160vmax;opacity:0;visibility:hidden}
+#bl-intro::before{content:"";position:absolute;inset:-20%;pointer-events:none;
+  background:radial-gradient(circle min(62vw,460px) at 50% 50%,rgba(var(--bl-glow),.30),rgba(var(--bl-glow),0) 70%);
+  opacity:.15;animation:bl-room var(--bl-dur) ease-in-out both}
+#bl-intro .bl-orb{position:relative;width:var(--bl-orb);aspect-ratio:1;display:grid;place-items:center;
+  animation:bl-inhale var(--bl-dur) cubic-bezier(.45,0,.25,1) both}
+#bl-intro .bl-orb svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+#bl-intro .bl-orb circle{fill:none;vector-effect:non-scaling-stroke}
+#bl-intro .bl-track{stroke:var(--bl-track);stroke-width:1}
+#bl-intro .bl-arc{stroke:var(--bl-arc);stroke-width:2;stroke-linecap:round;stroke-dasharray:308;stroke-dashoffset:308;
+  animation:bl-arc calc(var(--bl-dur) - .1s) linear forwards}
+#bl-intro .bl-orb i{position:absolute;inset:18%;border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--bl-glow),.26),rgba(var(--bl-glow),.06) 50%,transparent 70%);
+  animation:bl-core var(--bl-dur) ease-in-out both}
+#bl-intro .bl-orb::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--bl-arc);box-shadow:0 0 18px 4px color-mix(in srgb,var(--bl-arc) 55%,transparent)}
+#bl-intro .bl-orb b{position:absolute;inset:0;border-radius:50%;border:1px solid var(--bl-dim);opacity:0;
+  animation:bl-ripple 1.6s cubic-bezier(.16,1,.3,1) both}
+#bl-intro .bl-orb b:nth-of-type(1){animation-delay:calc(var(--bl-dur) * .52)}
+#bl-intro .bl-orb b:nth-of-type(2){animation-delay:calc(var(--bl-dur) * .65)}
+#bl-intro .bl-say{position:absolute;top:calc(50% + var(--bl-orb) / 2 + 32px);left:0;right:0;height:22px;text-align:center;
+  color:var(--bl-text);font-size:12px;letter-spacing:.14em}
+#bl-intro .bl-say span{position:absolute;left:0;right:0;opacity:0}
+#bl-intro .bl-say span:nth-child(1){animation:bl-say calc(var(--bl-dur) * .47) cubic-bezier(0,0,.2,1) .1s both}
+#bl-intro .bl-say span:nth-child(2){animation:bl-say calc(var(--bl-dur) * .47) cubic-bezier(0,0,.2,1) calc(var(--bl-dur) * .52) both}
+#bl-intro .bl-cue{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;
+  color:var(--bl-dim);font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:0;animation:bl-fade .8s ease-out .6s forwards}
+@keyframes bl-room{45%,55%{opacity:.75;transform:scale(1.12)}100%{opacity:.3}}
+@keyframes bl-inhale{0%{transform:scale(.42)}45%,55%{transform:scale(1)}100%{transform:scale(.5)}}
+@keyframes bl-core{0%{opacity:.2;transform:scale(.6)}45%,55%{opacity:1;transform:scale(1)}100%{opacity:.5;transform:scale(.8)}}
+@keyframes bl-arc{to{stroke-dashoffset:0}}
+@keyframes bl-ripple{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes bl-say{0%{opacity:0;transform:translateY(6px)}20%,75%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes bl-fade{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#bl-intro{display:none}}
+
+/* ── 히어로 배경 캔버스 ── */
+.bl-hero{position:relative;isolation:isolate}
+/* canvas는 대체 요소라 top/bottom만으로는 높이가 안 늘어남(기본 2:1 비율) → height:100% 필수 */
+#bl-bg{position:absolute;top:0;left:50%;width:100vw;height:100%;transform:translateX(-50%);z-index:-1;display:block;pointer-events:none;
+  background:var(--bl-hero-fallback);opacity:0;transition:opacity 1.6s cubic-bezier(.16,1,.3,1);
+  -webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+#bl-bg.on{opacity:1}
