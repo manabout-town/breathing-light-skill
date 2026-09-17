@@ -42,11 +42,11 @@ section.next{min-height:60vh;padding:80px clamp(20px,6vw,96px);border-top:1px so
 <script src="window-light.js"></script>
 <script src="breathing-intro.js"></script>
 <script>
-  // ?preset=warm|linen|dusk|mint 로 바꿔 보기
+  // ?preset=warm|linen|dusk|mint · ?shape=circle|key|square 로 바꿔 보기
   var preset = new URLSearchParams(location.search).get('preset') || 'warm';
   if (preset === 'dusk') document.documentElement.classList.add('dark'); // 어두운 프리셋은 흰 글씨·어두운 지면
   WindowLight.mount(document.getElementById('bl-bg'), { preset: preset });
-  BreathingIntro.start({ duration: 3000 });
+  BreathingIntro.start({ duration: 3000, shape: new URLSearchParams(location.search).get('shape') || 'circle' });
 </script>
 </body>
 </html>

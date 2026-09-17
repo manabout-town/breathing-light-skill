@@ -3,9 +3,9 @@
  * 커튼 너머 대각선 햇살 + 화분 잎 그림자 + 먼지 결 + 필름 그레인이 호흡 주기로 밝아졌다 어두워진다.
  *
  * 사용:
- *   <canvas id="heroBg" aria-hidden="true"></canvas>   ← 히어로 섹션 첫 자식
- *   <script src="window-light.js"></script>
- *   <script>WindowLight.mount(document.getElementById('heroBg'), { preset: 'warm' })</script>
+ *   HTML: canvas#bl-bg 를 히어로 섹션 안에 두고, 이 파일을 불러온 뒤
+ *   JS:   WindowLight.mount(document.getElementById('bl-bg'), { preset: 'warm' })
+ *   (주의: 이 주석에 닫는 script 태그 문자열을 쓰지 말 것 — HTML에 인라인하면 거기서 스크립트가 끊긴다)
  *
  * 옵션 (모두 선택):
  *   preset    'warm' | 'linen' | 'dusk' | 'mint' — 아래 PRESETS
@@ -14,6 +14,9 @@
  *   period    호흡 주기 초 (기본 8)        sway   커튼 흔들림 속도 배수 (기본 1)
  *   scale     렌더 해상도 배수 (기본 .5)   angle  빛줄기 기울기 [x,y] (기본 [1,.62])
  *   pointer   마우스 따라 빛이 살짝 이동 (기본 true)
+ *   narrowStrength  폭 760px 미만에서 쓸 빛 세기 (기본 = strength). 세로 화면은 빛줄기가 넓어져 과해지기 쉽다
+ *   mode      'fill'(기본: 배경을 직접 칠함) | 'overlay'(사진 hero 위에 빛만 더함 — 검정 바탕 + screen 합성)
+ *   tint      overlay 모드의 빛 색 [r,g,b] (기본 따뜻한 햇빛)
  * 반환: { stop() }
  */
 (function (root) {
@@ -63,6 +66,12 @@
       period: o.period || 8, sway: o.sway == null ? 1 : o.sway, scale: o.scale || .5,
       angle: o.angle || [1, .62], pointer: o.pointer !== false
     };
+    cfg.narrow = o.narrowStrength == null ? cfg.strength : o.narrowStrength;
+    if (o.mode === 'overlay') {
+      // 검정 바탕이면 screen 합성에서 아무것도 안 바뀌고 빛줄기만 사진 위에 더해진다
+      cfg.base = [.01, .01, .012]; cfg.shade = [0, 0, 0]; cfg.sun = o.tint || [.9, .62, .34];
+      cv.classList.add('bl-overlay');
+    }
     var hero = cv.parentElement;
     var gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
     // WebGL이 없으면 CSS 그라디언트(.on 배경)만 보여줌
@@ -81,13 +90,14 @@
     var U = function (n) { return gl.getUniformLocation(pr, n); };
     var uR = U('R'), uT = U('T'), uM = U('M');
     gl.uniform3fv(U('BASE'), cfg.base); gl.uniform3fv(U('SHADE'), cfg.shade); gl.uniform3fv(U('SUN'), cfg.sun);
-    gl.uniform1f(U('STR'), cfg.strength); gl.uniform1f(U('LEAF'), cfg.leaf);
+    var uS = U('STR'); gl.uniform1f(U('LEAF'), cfg.leaf);
     gl.uniform1f(U('PER'), cfg.period); gl.uniform1f(U('SWAY'), cfg.sway); gl.uniform2fv(U('ANG'), cfg.angle);
 
     function size() {
       var w = Math.max(1, Math.round(cv.clientWidth * cfg.scale)), h = Math.max(1, Math.round(cv.clientHeight * cfg.scale));
       if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
       gl.uniform2f(uR, w, h);
+      gl.uniform1f(uS, innerWidth < 760 ? cfg.narrow : cfg.strength);
     }
     var mx = 0, my = 0, tx = 0, ty = 0;
     function onMove(e) { tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5; }
